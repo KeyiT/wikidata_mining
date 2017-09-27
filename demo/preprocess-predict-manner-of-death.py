@@ -33,4 +33,4 @@ num_feat_list = ['date']
 label_name = 'deathMannerLabel'
 
 preprocess.fill_missing_data(cat_feat_list, num_feat_list, label_name)
-preprocess.assemble_features_labels_to_json("json/pp_preprocessed1.json")
+preprocess.assemble_features_labels_to_json("json/pp_preprocessed.json")

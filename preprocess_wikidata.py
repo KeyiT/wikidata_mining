@@ -213,6 +213,13 @@ class Preprocessor:
             shape=(len(json_data) - 1, feat_end_index + 1 + len(feat_name_num)))
 
     @classmethod
+    def get_labels_from_file(cls, json_file_path):
+        with open(json_file_path, 'r') as f:
+            json_data = json.load(f)
+
+        return json_data[0]['label_name']
+
+    @classmethod
     def assemble_feature_to_matrix_from_file(cls, json_file_path):
         with open(json_file_path, 'r') as f:
             json_data = json.load(f)
