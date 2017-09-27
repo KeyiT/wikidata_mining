@@ -28,10 +28,10 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # classify
-rfc = RandomForestClassifier(class_weight='balanced_subsample')
+rfc = RandomForestClassifier(class_weight='balanced_subsample', n_jobs=10)
 params = {
     'max_depth': range(5, 151, 2),
-    'n_estimators': range(10, 151, 20)
+    'n_estimators': range(10, 100, 20)
 }
 
 # abdt = AdaBoostDecisionTrees(algorithm="SAMME")
@@ -43,7 +43,7 @@ params = {
 
 # tune hyper parameters, do k-fold cross validation to find the best hyper parameters
 fscore = metrics.make_scorer(prfs_scoring, average='macro', metric_idx=2)
-gs = GridSearchCV(rfc, params, cv=5, scoring=fscore)
+gs = GridSearchCV(rfc, params, cv=5, scoring=fscore, n_jobs=10)
 gs.fit(X_train, y_train)
 
 print("Best parameters set found on development set:")
