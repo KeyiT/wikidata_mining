@@ -38,7 +38,7 @@ root directory:
 
 ## Licence
 
-Copyright ? 2017 KeyiT
+Copyright © 2017 KeyiT
 See [License](https://github.com/KeyiT/wikidata_mining/blob/master/LICENSE) for licensing information
 
 
