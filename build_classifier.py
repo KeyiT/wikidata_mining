@@ -286,7 +286,7 @@ def build_train_test(build_estimator_func, params,
 def build_lr(X_train, y_train, train_perform_data_path, model_path,
              Cs,
              multi_class='ovr', solver='liblinear', penalty='l1',
-             n_jobs_estimator=1, n_jobs_cv=5):
+             n_jobs_estimator=1, n_jobs_cv=20):
     """
 
     :param X_train:
