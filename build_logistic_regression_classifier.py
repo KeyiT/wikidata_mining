@@ -3,7 +3,7 @@ import build_classifier as bc
 
 if __name__ == "__main__":
 
-    Cs = np.arange(0.2, 0.5, 0.2)
+    Cs = np.arange(0.1, 2.1, 0.1)
     bc.build_train_test(
         bc.build_lr, [Cs]
     )

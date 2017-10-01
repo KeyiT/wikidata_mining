@@ -1,1 +1,0 @@
-$ python build_logistic_regression_classifier.py --src_json_data demo/json/pp_preprocessed.json --train_perform demo/results/train_performance_lr.json --test_perform demo/results/test_performance_lr.json
