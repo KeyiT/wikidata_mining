@@ -4,6 +4,7 @@ from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble.gradient_boosting import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 import json
 import pickle
@@ -20,7 +21,8 @@ def _prfs_scoring(y_true, y_pred, beta=1.0, labels=None,
         pos_label=pos_label, average=average,
         warn_for=warn_for, sample_weight=sample_weight)[metric_idx]
 
-class ClassifierTrainee:
+
+class ClassifierTrainer:
 
     def __init__(self, estimator, hyper_params=None):
         self.estimator = estimator
@@ -241,14 +243,23 @@ def get_args():
     return args
 
 
-def build_train_test(build_estimator_func, params,
-                     train_test_split_ratio=0.1):
+def train_test(model, params, train_test_split_ratio=0.1, n_jobs_cv=10):
     """
+    Train and Test input classification model. K-fold cross validation is carried
+    out to search for the best hyper parameters.
 
-    :param build_estimator_func:
-    :param params:
-    :param train_test_split_ratio:
-    :return:
+    :param model: estimator
+        Estimator to be trained and tested.
+
+    :param params: dict
+        Parameter dictionary.
+
+    :param train_test_split_ratio: float, optional (default=0.1)
+        The percentage of test data with respect to the total data size.
+
+    :param n_jobs_cv: int, optional (default=10)
+        The number of jobs (cross validation) executed in parallel.
+
     """
 
     args = get_args()
@@ -279,78 +290,41 @@ def build_train_test(build_estimator_func, params,
         X, y, test_size=train_test_split_ratio
     )
 
-    gs = build_estimator_func(X_train, y_train, train_perform_data_path, model_path, *params)
-    gs.test(X_test, y_test, test_perform_data_path)
-
-
-def build_lr(X_train, y_train, train_perform_data_path, model_path,
-             Cs,
-             multi_class='ovr', solver='liblinear', penalty='l1',
-             n_jobs_estimator=1, n_jobs_cv=20):
-    """
-
-    :param X_train:
-    :param y_train:
-    :param train_perform_data_path:
-    :param model_path:
-    :param Cs:
-    :param multi_class:
-    :param solver:
-    :param penalty:
-    :param n_jobs_estimator:
-    :param n_jobs_cv:
-    :return:
-    """
-
-    # initialize estimator
-    estimator = LogisticRegression(class_weight='balanced', n_jobs=n_jobs_estimator,
-                             penalty=penalty, solver=solver,
-                             multi_class=multi_class)
-
-    # hyper parameters
-    params = {
-        'C': Cs,
-    }
-
-    # train estimator
-    ct = ClassifierTrainee(estimator, params)
+    # build k-fold cross validation trainer
+    ct = ClassifierTrainer(model, params)
+    # train
     ct.train(X_train=X_train, y_train=y_train,
              train_perform_data_path=train_perform_data_path,
              model_path=model_path, n_jobs=n_jobs_cv)
+    # test
+    ct.test(X_test, y_test, test_perform_data_path)
 
-    # return trainer
-    return ct
 
-
-def build_rf(X_train, y_train, train_perform_data_path, model_path,
-             num_max_depth, num_dts_range,
-             class_weight='balanced_subsample', n_jobs_estimator=10, n_jobs_cv=10):
-    """
-
-    :param X_train:
-    :param y_train:
-    :param train_perform_data_path:
-    :param model_path:
-    :param num_max_depth:
-    :param num_dts_range:
-    :param class_weight:
-    :param n_jobs_estimator:
-    :param n_jobs_cv:
-    :return:
-    """
+def build_lr(multi_class='ovr', solver='liblinear', penalty='l1',
+             n_jobs_estimator=1):
 
     # initialize estimator
-    estimator = RandomForestClassifier(class_weight=class_weight, n_jobs=n_jobs_estimator)
+    model = LogisticRegression(class_weight='balanced', n_jobs=n_jobs_estimator,
+                               penalty=penalty, solver=solver,
+                               multi_class=multi_class)
 
-    # hyper parameters
-    params = {
-        'max_depth': num_max_depth,
-        'n_estimators': num_dts_range
-    }
+    return model
 
-    ct = ClassifierTrainee(estimator, params)
-    ct.train(X_train=X_train, y_train=y_train,
-             train_perform_data_path=train_perform_data_path,
-             model_path=model_path, n_jobs=n_jobs_cv)
 
-    return ct
+def build_rf(class_weight='balanced_subsample', n_jobs_estimator=10):
+
+    # initialize estimator
+    model = RandomForestClassifier(class_weight=class_weight, n_jobs=n_jobs_estimator)
+
+    return model
+
+
+def build_gbdt(learning_rate=0.1):
+
+    # initialize estimator
+    model = GradientBoostingClassifier(learning_rate=learning_rate)
+
+    return model
+
+
+
