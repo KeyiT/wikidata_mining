@@ -260,6 +260,7 @@ def train_test(model, params, train_test_split_ratio=0.1, n_jobs_cv=10):
     :param n_jobs_cv: int, optional (default=10)
         The number of jobs (cross validation) executed in parallel.
 
+    :return ct: ClassifierTrainer
     """
 
     args = get_args()
@@ -298,6 +299,8 @@ def train_test(model, params, train_test_split_ratio=0.1, n_jobs_cv=10):
              model_path=model_path, n_jobs=n_jobs_cv)
     # test
     ct.test(X_test, y_test, test_perform_data_path)
+
+    return ct
 
 
 def build_lr(multi_class='ovr', solver='liblinear', penalty='l1',
