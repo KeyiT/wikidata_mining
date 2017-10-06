@@ -8,6 +8,8 @@ from sklearn.ensemble.gradient_boosting import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 import json
 import pickle
+from abdt import AdaBoostDecisionTrees
+from abc import abstractmethod, ABCMeta
 
 from preprocess_wikidata import Preprocessor
 
@@ -233,6 +235,31 @@ class ClassifierTrainer:
         return self._model.predict(X)
 
 
+class DataManipulator:
+    """
+        A Meta Class providing an abstract method to process feature matrix and label vectors
+
+    """
+
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def manipulate_data(self, X, y=None):
+        """
+        The train_test function will call this method after load assembled
+        data from file.
+
+        :param X: matrix
+            The feature matrix.
+
+        :param y: list, optional
+            The corresponding labels.
+
+        :returns processed X and y
+        """
+        raise NotImplementedError
+
+
 def get_args():
     args = {}
     raw = list(argv)
@@ -243,7 +270,7 @@ def get_args():
     return args
 
 
-def train_test(model, params, train_test_split_ratio=0.1, n_jobs_cv=10):
+def train_test(model, params, train_test_split_ratio=0.1, n_jobs_cv=10, data_manipulator=None):
     """
     Train and Test input classification model. K-fold cross validation is carried
     out to search for the best hyper parameters.
@@ -259,6 +286,9 @@ def train_test(model, params, train_test_split_ratio=0.1, n_jobs_cv=10):
 
     :param n_jobs_cv: int, optional (default=10)
         The number of jobs (cross validation) executed in parallel.
+
+    :param data_manipulator: DataManipulator, optional
+        Customized preprocessor.
 
     :return ct: ClassifierTrainer
     """
@@ -285,6 +315,9 @@ def train_test(model, params, train_test_split_ratio=0.1, n_jobs_cv=10):
     # load json data
     X = Preprocessor.assemble_feature_to_matrix_from_file(src_data_path)
     y = Preprocessor.assemble_labels_to_vector_from_file(src_data_path)
+
+    if data_manipulator is not None:
+        X, y = data_manipulator.manipulate_data(X, y)
 
     # split training and test data set
     X_train, X_test, y_train, y_test = train_test_split(
@@ -330,4 +363,10 @@ def build_gbdt(learning_rate=0.1):
     return model
 
 
+def build_abdt(class_weight='balanced', learning_rate=1.0):
+
+    # initialize estimator
+    model = AdaBoostDecisionTrees(class_weight=class_weight, learning_rate=learning_rate)
+
+    return model
 
